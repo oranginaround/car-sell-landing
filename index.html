@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Car Photo Gallery</title>
+
+        <!-- Lightbox2 CSS -->
+        <link rel="stylesheet" 
+            href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css">
+
+        <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            padding: 20px 0;
+        }
+
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            aspect-ratio: 4/3;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.05);
+        }
+
+        .gallery-item::after {
+            content: '🔍';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            font-size: 1.2rem;
+        }
+
+        .gallery-item:hover::after {
+            opacity: 1;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            body {
+                padding: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        /* Toggle Navigation */
+        .nav-toggle {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            background: white;
+            border-radius: 50px;
+            padding: 5px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .nav-btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-radius: 45px;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: #666;
+        }
+
+        .nav-btn.active {
+            background: #e9ecef;
+            color: #495057;
+            border: 2px solid #007bff;
+        }
+
+        .nav-btn:hover:not(.active) {
+            background: #f8f9fa;
+            color: #495057;
+        }
+
+        /* Content Views */
+        .content-view {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .content-view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Description Styles */
+        .description {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            max-width: 900px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .car-title {
+            font-size: 2.2rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .car-date {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        .price {
+            font-size: 2rem;
+            color: #27ae60;
+            font-weight: 700;
+            margin: 20px 0;
+            padding: 15px;
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .section {
+            margin: 25px 0;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 8px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            margin: 12px 0;
+            padding: 8px 0;
+        }
+
+        .info-item .emoji {
+            font-size: 1.2rem;
+            margin-right: 10px;
+            min-width: 30px;
+        }
+
+        .characteristics-list {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .characteristics-list ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .characteristics-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+        }
+
+        .characteristics-list li:last-child {
+            border-bottom: none;
+        }
+
+        .char-label {
+            font-weight: 600;
+            min-width: 120px;
+            color: #495057;
+        }
+
+        .maintenance-list {
+            background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .maintenance-item {
+            display: flex;
+            align-items: flex-start;
+            margin: 10px 0;
+            padding: 8px 0;
+        }
+
+        .maintenance-item .check {
+            color: #27ae60;
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .issues-list {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .issue-item {
+            display: flex;
+            align-items: flex-start;
+            margin: 10px 0;
+            padding: 8px 0;
+        }
+
+        .issue-item .warning {
+            color: #f39c12;
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .benefits-list {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .benefit-item {
+            display: flex;
+            align-items: flex-start;
+            margin: 10px 0;
+            padding: 8px 0;
+        }
+
+        .benefit-item .icon {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        /* Report Download Button */
+        .report-download-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            color: white;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .report-download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            text-decoration: none;
+            color: white;
+        }
+
+        .report-download-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Custom Lightbox Enhancements */
+        .lightbox {
+            z-index: 9999 !important;
+        }
+
+        .lb-overlay {
+            background: rgba(0, 0, 0, 0.85) !important;
+        }
+
+        .lb-image {
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .lb-nav a.lb-prev,
+        .lb-nav a.lb-next {
+            background: rgba(0, 0, 0, 0.6) !important;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lb-nav a.lb-prev:hover,
+        .lb-nav a.lb-next:hover {
+            background: rgba(0, 0, 0, 0.8) !important;
+        }
+
+        .lb-close {
+            background: rgba(0, 0, 0, 0.6) !important;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            top: 20px !important;
+            right: 20px !important;
+        }
+
+        .lb-close:hover {
+            background: rgba(0, 0, 0, 0.8) !important;
+        }
+
+        .lb-data .lb-details {
+            text-align: center;
+            color: #fff;
+            font-size: 14px;
+            padding: 10px 0;
+        }
+
+        @media (max-width: 768px) {
+            .description {
+                padding: 20px;
+                margin: 0 10px;
+            }
+            
+            .car-title {
+                font-size: 1.8rem;
+            }
+            
+            .price {
+                font-size: 1.6rem;
+            }
+            
+            .nav-toggle {
+                margin: 0 10px 30px 10px;
+            }
+        }
+    </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>Peugeot 207 CC</h1>
+                <p>2007 • 1.6 HDi • Convertible</p>
+            </div>
+
+            <!-- Navigation Toggle -->
+            <div class="nav-toggle">
+                <button class="nav-btn active"
+                    onclick="showView('description')">Description</button>
+                <button class="nav-btn"
+                    onclick="showView('gallery')">Gallery</button>
+            </div>
+
+            <!-- Language Toggle (only visible in description view) -->
+            <div id="lang-toggle" class="nav-toggle"
+                style="margin-top: 10px; max-width: 400px;">
+                <button class="nav-btn"
+                    onclick="switchLanguage('sr')">Srpski</button>
+                <button class="nav-btn active"
+                    onclick="switchLanguage('en')">English</button>
+                <button class="nav-btn"
+                    onclick="switchLanguage('ru')">Русский</button>
+            </div>
+
+            <!-- Description View -->
+            <div id="description-view" class="content-view active">
+                <div class="description">
+                    <h1 class="car-title" data-key="carTitle">Peugeot 207 CC 1.6
+                        HDi (2007), механика, дизель, кабриолет</h1>
+
+                    <div class="price" data-key="price">💶 Цена: 4100 €</div>
+
+                    <div class="section">
+                        <div class="info-item">
+                            <span class="emoji">📍</span>
+                            <span data-key="importCountry"><strong>Страна
+                                    увоза:</strong> Италия, один владелец с 2007
+                                по 2023</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="emoji">📍</span>
+                            <span data-key="secondOwner"><strong>Я — второй
+                                    владелец,</strong> первый в Сербии, авто в
+                                собственности почти 2 года</span>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2 class="section-title" data-key="generalSpecs">Общие
+                            характеристики</h2>
+                        <div class="characteristics-list">
+                            <ul>
+                                <li><span class="char-label"
+                                        data-key="engine">Двигатель:</span> <span data-key="engineValue">1.6
+                                    HDi (107 л.с., дизель, турбо)</span></li>
+                                <li><span class="char-label"
+                                        data-key="consumption">Расход:</span>
+                                    <span data-key="consumptionValue">5–5.5 л/100 км (по трассе)</span></li>
+                                <li><span class="char-label"
+                                        data-key="transmission">КПП:</span>
+                                    <span
+                                        data-key="transmissionValue">5-ступенчатая
+                                        механика</span></li>
+                                <li><span class="char-label"
+                                        data-key="drivetrain">Привод:</span>
+                                    <span
+                                        data-key="drivetrainValue">передний</span></li>
+                                <li><span class="char-label"
+                                        data-key="bodyType">Кузов:</span> <span
+                                        data-key="bodyTypeValue">купе-кабриолет,
+                                        2 двери</span></li>
+                                <li><span class="char-label"
+                                        data-key="color">Цвет:</span> <span data-key="colorValue">Thorium
+                                    Grey (KTH), металлик</span></li>
+                                <li><span class="char-label"
+                                        data-key="interior">Салон:</span> <span
+                                        data-key="interiorValue">кожа
+                                        (перфорированная + Claudia), спортивные
+                                        сиденья</span></li>
+                                <li><span class="char-label"
+                                        data-key="wheels">Диски:</span> <span
+                                        data-key="wheelsValue">оригинальные
+                                        литые 17" Hockenheim</span></li>
+                                <li><span class="char-label"
+                                        data-key="equipment">Комплектация:</span>
+                                    <span data-key="equipmentValue">ESP, ABS,
+                                        двухзонный климат, 4 подушки
+                                        безопасности, штатная магнитола RD4 с
+                                        AUX</span></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2 class="section-title"
+                            data-key="maintenance">Техническое обслуживание и
+                            обновления</h2>
+                        <div class="maintenance-list">
+                            <div class="maintenance-item">
+                                <span class="check">✅</span>
+                                <span data-key="clutch"><strong>Новое
+                                        сцепление</strong> (усиленное,
+                                    неоригинал)</span>
+                            </div>
+                            <div class="maintenance-item">
+                                <span class="check">✅</span>
+                                <span data-key="brakes"><strong>Новые тормозные
+                                        диски</strong> с подшипниками, колодки и
+                                    тормозная жидкость (дорогой ремонт)</span>
+                            </div>
+                            <div class="maintenance-item">
+                                <span class="check">✅</span>
+                                <div>
+                                    <strong data-key="suspension">🚗 Полная
+                                        замена передней подвески:</strong>
+                                    <ul
+                                        style="margin-top: 8px; padding-left: 20px;">
+                                        <li data-key="suspensionArms">новые
+                                            рычаги с сайлентблоками</li>
+                                        <li data-key="suspensionLinks">новые
+                                            стойки стабилизатора</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="maintenance-item">
+                                <span class="check">✅</span>
+                                <span data-key="absEsp"><strong>Замена модуля
+                                        ABS/ESP</strong> (на контрактный) — ESP
+                                    теперь работает</span>
+                            </div>
+                            <div class="maintenance-item">
+                                <span class="check">✅</span>
+                                <span data-key="timing"><strong>Замена
+                                        ГРМ</strong> на ~190 000 км: ремень,
+                                    помпа, охлаждающая жидкость</span>
+                            </div>
+                            <div class="maintenance-item">
+                                <span class="check">✅</span>
+                                <span data-key="tires"><strong>Новые всесезонные
+                                        шины</strong> Kleber Quadraxer 2
+                                    (проехали полтора сезона)</span>
+                            </div>
+                            <div class="maintenance-item">
+                                <span class="check">✅</span>
+                                <span data-key="aux"><strong>Установлен и
+                                        настроен AUX</strong> — не нужен
+                                    FM/Bluetooth-передатчик</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2 class="section-title" data-key="issues">Честно о
+                            недостатках</h2>
+                        <div class="issues-list">
+                            <div class="issue-item">
+                                <span class="warning">⚠️</span>
+                                <span data-key="roofDents"><strong>Мелкие
+                                        вмятины на крыше</strong> после ледяного
+                                    дождя (почти незаметны)</span>
+                            </div>
+                            <div class="issue-item">
+                                <span class="warning">⚠️</span>
+                                <span data-key="bumperScratch"><strong>Царапина
+                                        на заднем бампере</strong> на пластике
+                                    (оставили на парковке)</span>
+                            </div>
+                            <div class="issue-item">
+                                <span class="warning">⚠️</span>
+                                <span data-key="mirrorMotor"><strong>Не работает
+                                        моторчик левого зеркала</strong>
+                                    (настройка вручную возможна)</span>
+                            </div>
+                            <div class="issue-item">
+                                <span class="warning">⚠️</span>
+                                <span data-key="displayIssue"><strong>В жару
+                                        дисплей мультимедиа может временно
+                                        отключаться</strong> — это типичная
+                                    заводская особенность RD4-блока у
+                                    Peugeot/Citroën. После охлаждения салона или
+                                    в обычных условиях экран работает
+                                    нормально.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2 class="section-title" data-key="benefits">Что вы
+                            получаете</h2>
+                        <div class="benefits-list">
+                            <div class="benefit-item">
+                                <span class="icon">🌅</span>
+                                <span
+                                    data-key="convertibleBenefit"><strong>Кабриолет
+                                        с надёжной твердой крышей,</strong>
+                                    которая работает без нареканий</span>
+                            </div>
+                            <div class="benefit-item">
+                                <span class="icon">🛣</span>
+                                <span data-key="engineBenefit"><strong>Очень
+                                        экономичный дизельный
+                                        двигатель,</strong> идеален для дальних
+                                    поездок</span>
+                            </div>
+                            <div class="benefit-item">
+                                <span class="icon">🧼</span>
+                                <span
+                                    data-key="appearanceBenefit"><strong>Стильный,
+                                        ухоженный внешний вид</strong> и
+                                    спортивный салон</span>
+                            </div>
+                            <div class="benefit-item">
+                                <span class="icon">🔧</span>
+                                <span data-key="maintenanceBenefit"><strong>Все
+                                        важные узлы и расходники
+                                        заменены</strong></span>
+                            </div>
+                        </div>
+                        
+                        <!-- CarVertical Report Download Button -->
+                        <div class="section">
+                            <div style="text-align: center; margin: 30px 0;">
+                                <a href="static/files/report.pdf" download class="report-download-btn" data-key="reportButton">
+                                    📄 CarVertical Report
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gallery View -->
+            <div id="gallery-view" class="content-view">
+                <div class="header">
+                    <p data-key="gallerySubtitle">Click on any photo to view in full size</p>
+                </div>
+                <div id="loading" class="loading" data-key="loadingText">Loading photos...</div>
+                <div id="gallery" class="gallery"></div>
+            </div>
+        </div>
+
+        <!-- jQuery (required for Lightbox2) -->
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <!-- Lightbox2 JS -->
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox.min.js"></script>
+
+        <script>
+        // Translation data for all three languages
+        const translations = {
+            sr: {
+                carTitle: "Peugeot 207 CC 1.6 HDi (2007), manuelni menjač, dizel, kabriolet",
+                price: "💶 Cena: 4100 €",
+                importCountry: "<strong>Zemlja uvoza:</strong> Italija, jedan vlasnik od 2007. do 2023.",
+                secondOwner: "<strong>Ja sam drugi vlasnik,</strong> prvi u Srbiji — auto u vlasništvu skoro 2 godine",
+                
+                generalSpecs: "Opšte karakteristike",
+                engine: "Motor:",
+                engineValue: "1.6 HDi (107 KS, dizel, turbo)",
+                consumption: "Potrošnja:",
+                consumptionValue: "5–5.5 l/100 km (autoput)",
+                transmission: "Menjač:",
+                transmissionValue: "5-stepeni manuelni",
+                drivetrain: "Pogon:",
+                drivetrainValue: "prednji",
+                bodyType: "Karoserija:",
+                bodyTypeValue: "kupe-kabriolet, 2 vrata",
+                color: "Boja:",
+                colorValue: "Thorium Grey (KTH), metalik",
+                interior: "Enterijer:",
+                interiorValue: "koža (perforirana + Claudia), sportska sedišta",
+                wheels: "Felne:",
+                wheelsValue: "originalne aluminijumske 17\" Hockenheim", // ✅ Changed “litijumske” → “aluminijumske” (correct term)
+                
+                equipment: "Oprema:",
+                equipmentValue: "ESP, ABS, dvozonski klima-uređaj, 4 vazdušna jastuka, fabrički radio RD4 sa AUX-om",
+
+                maintenance: "Tehničko održavanje i poboljšanja",
+                clutch: "<strong>Novo kvačilo</strong> (pojačano, neoriginalno)", // "neoriginalno" is the adjective form
+                brakes: "<strong>Novi kočni diskovi</strong> sa ležajevima, pločice i kočna tečnost (skupa popravka)",
+                
+                suspension: "🚗 Potpuna zamena prednje ogibljenja:", // "ogibljenje" is more common in tech context
+                suspensionArms: "nove poluge sa sajlent-blokovima",
+                suspensionLinks: "nove stabilizatorske spone",
+
+                absEsp: "<strong>Zamena ABS/ESP modula</strong> (polovan, ali ispravan) — ESP sada radi", // clearer phrasing
+                
+                timing: "<strong>Zamena zupčastog kaiša</strong> na ~190.000 km: kaiš, pumpa, rashladna tečnost",
+                
+                tires: "<strong>Nove celogodišnje gume</strong> Kleber Quadraxer 2 (vožene jednu sezonu)", // better than "svesezonske" + corrected usage
+                
+                aux: "<strong>Ugrađen i podešen AUX</strong> — nije potreban FM/Bluetooth predajnik",
+
+                issues: "Iskreno o nedostacima",
+                roofDents: "<strong>Male udubljine na krovu</strong> nakon ledene kiše (skoro neprimetne)", // fixed "kišę" typo
+                bumperScratch: "<strong>Ogrebotina na zadnjem braniku</strong> na plastici (nastala na parkingu)",
+                mirrorMotor: "<strong>Ne radi motorčić levog retrovizora</strong> (podešavanje moguće ručno)",
+                
+                displayIssue: "<strong>Na velikoj vrućini displej multimedije se može privremeno isključiti</strong> — to je tipična fabrička osobina RD4-bloka kod Peugeot/Citroën. Posle hlađenja kabine ili u normalnim uslovima, ekran funkcioniše bez problema.",
+
+                benefits: "Šta dobijate",
+                convertibleBenefit: "<strong>Kabriolet sa pouzdanim tvrdim krovom,</strong> koji radi bez greške",
+                engineBenefit: "<strong>Veoma ekonomičan dizel motor,</strong> idealan za duga putovanja",
+                appearanceBenefit: "<strong>Stilizovan, negovan spoljašnji izgled</strong> i sportski enterijer",
+                maintenanceBenefit: "<strong>Svi ključni delovi i potrošni materijal su zamenjeni</strong>",
+                reportButton: "📄 CarVertical Izveštaj",
+                galleryTitle: "Galerija fotografija automobila",
+                gallerySubtitle: "Kliknite na bilo koju fotografiju za prikaz u punoj veličini",
+                loadingText: "Učitavanje fotografija..."
+            },
+            en: {
+                carTitle: "Peugeot 207 CC 1.6 HDi (2007), manual, diesel, convertible",
+                price: "💶 Price: 4100 €",
+                importCountry: "<strong>Import country:</strong> Italy, one owner from 2007 to 2023",
+                secondOwner: "<strong>I am the second owner,</strong> first in Serbia, car owned for almost 2 years",
+                generalSpecs: "General Specifications",
+                engine: "Engine:",
+                engineValue: "1.6 HDi (107 hp, diesel, turbo)",
+                consumption: "Consumption:",
+                consumptionValue: "5–5.5 l/100 km (highway)",
+                transmission: "Transmission:",
+                transmissionValue: "5-speed manual",
+                drivetrain: "Drivetrain:",
+                drivetrainValue: "front-wheel drive",
+                bodyType: "Body:",
+                bodyTypeValue: "coupe-convertible, 2 doors",
+                color: "Color:",
+                colorValue: "Thorium Grey (KTH), metallic",
+                interior: "Interior:",
+                interiorValue: "leather (perforated + Claudia), sport seats",
+                wheels: "Wheels:",
+                wheelsValue: "original alloy 17\" Hockenheim",
+                equipment: "Equipment:",
+                equipmentValue: "ESP, ABS, dual-zone climate, 4 airbags, factory radio RD4 with AUX",
+                maintenance: "Technical Maintenance and Upgrades",
+                clutch: "<strong>New clutch</strong> (reinforced, aftermarket)",
+                brakes: "<strong>New brake discs</strong> with bearings, pads and brake fluid (expensive repair)",
+                suspension: "🚗 Complete front suspension replacement:",
+                suspensionArms: "new control arms with bushings",
+                suspensionLinks: "new stabilizer links",
+                absEsp: "<strong>ABS/ESP module replacement</strong> (used) — ESP now works",
+                timing: "<strong>Timing belt replacement</strong> at ~190,000 km: belt, pump, coolant",
+                tires: "<strong>New all-season tires</strong> Kleber Quadraxer 2 (driven one and a half seasons)",
+                aux: "<strong>AUX installed and configured</strong> — no need for FM/Bluetooth transmitter",
+                issues: "Honest About Defects",
+                roofDents: "<strong>Small dents on roof</strong> after ice storm (barely noticeable)",
+                bumperScratch: "<strong>Scratch on rear bumper</strong> on plastic (left in parking)",
+                mirrorMotor: "<strong>Left mirror motor doesn't work</strong> (manual adjustment possible)",
+                displayIssue: "<strong>In hot weather the multimedia display may temporarily turn off</strong> — this is a typical factory feature of the RD4 unit in Peugeot/Citroën. After cabin cooling or in normal conditions the screen works normally.",
+                benefits: "What You Get",
+                convertibleBenefit: "<strong>Convertible with reliable hardtop,</strong> which works without complaints",
+                engineBenefit: "<strong>Very economical diesel engine,</strong> ideal for long trips",
+                appearanceBenefit: "<strong>Stylish, well-maintained appearance</strong> and sport interior",
+                maintenanceBenefit: "<strong>All important components and consumables replaced</strong>",
+                reportButton: "📄 CarVertical Report",
+                galleryTitle: "Car Photo Gallery",
+                gallerySubtitle: "Click on any photo to view in full size",
+                loadingText: "Loading photos..."
+            },
+            ru: {
+                carTitle: "Peugeot 207 CC 1.6 HDi (2007), механика, дизель, кабриолет",
+                price: "💶 Цена: 4100 €",
+                importCountry: "<strong>Страна ввоза:</strong> Италия, один владелец с 2007 по 2023",
+                secondOwner: "<strong>Я — второй владелец,</strong> первый в Сербии, авто в собственности почти 2 года",
+                generalSpecs: "Общие характеристики",
+                engine: "Двигатель:",
+                engineValue: "1.6 HDi (107 л.с., дизель, турбо)",
+                consumption: "Расход:",
+                consumptionValue: "5–5.5 л/100 км (по трассе)",
+                transmission: "КПП:",
+                transmissionValue: "5-ступенчатая механика",
+                drivetrain: "Привод:",
+                drivetrainValue: "передний",
+                bodyType: "Кузов:",
+                bodyTypeValue: "купе-кабриолет, 2 двери",
+                color: "Цвет:",
+                colorValue: "Thorium Grey (KTH), металлик",
+                interior: "Салон:",
+                interiorValue: "кожа (перфорированная + Claudia), спортивные сиденья",
+                wheels: "Диски:",
+                wheelsValue: "оригинальные литые 17\" Hockenheim",
+                equipment: "Комплектация:",
+                equipmentValue: "ESP, ABS, двухзонный климат, 4 подушки безопасности, штатная магнитола RD4 с AUX",
+                maintenance: "Техническое обслуживание и обновления",
+                clutch: "<strong>Новое сцепление</strong> (усиленное, неоригинал)",
+                brakes: "<strong>Новые тормозные диски</strong> с подшипниками, колодки и тормозная жидкость (дорогой ремонт)",
+                suspension: "🚗 Полная замена передней подвески:",
+                suspensionArms: "новые рычаги с сайлентблоками",
+                suspensionLinks: "новые стойки стабилизатора",
+                absEsp: "<strong>Замена модуля ABS/ESP</strong> (на контрактный) — ESP теперь работает",
+                timing: "<strong>Замена ГРМ</strong> на ~190 000 км: ремень, помпа, охлаждающая жидкость",
+                tires: "<strong>Новые всесезонные шины</strong> Kleber Quadraxer 2 (проехали полтора сезона)",
+                aux: "<strong>Установлен и настроен AUX</strong> — не нужен FM/Bluetooth-передатчик",
+                issues: "Честно о недостатках",
+                roofDents: "<strong>Мелкие вмятины на крыше</strong> после ледяного дождя (почти незаметны)",
+                bumperScratch: "<strong>Царапина на заднем бампере</strong> на пластике (оставили на парковке)",
+                mirrorMotor: "<strong>Не работает моторчик левого зеркала</strong> (настройка вручную возможна)",
+                displayIssue: "<strong>В жару дисплей мультимедиа может временно отключаться</strong> — это типичная заводская особенность RD4-блока у Peugeot/Citroën. После охлаждения салона или в обычных условиях экран работает нормально.",
+                benefits: "Что вы получаете",
+                convertibleBenefit: "<strong>Кабриолет с надёжной твердой крышей,</strong> которая работает без нареканий",
+                engineBenefit: "<strong>Очень экономичный дизельный двигатель,</strong> идеален для дальних поездок",
+                appearanceBenefit: "<strong>Стильный, ухоженный внешний вид</strong> и спортивный салон",
+                maintenanceBenefit: "<strong>Все важные узлы и расходники заменены</strong>",
+                reportButton: "📄 CarVertical Отчет",
+                galleryTitle: "Фотогалерея автомобиля",
+                gallerySubtitle: "Нажмите на любую фотографию для просмотра в полном размере",
+                loadingText: "Загрузка фотографий..."
+            }
+        };
+
+        let currentLanguage = 'en';
+
+        // Photo filenames from the static/photos folder
+        const photoFiles = [
+            '16022024-130.jpg',
+            '16022024-136.jpg',
+            '16022024-138.jpg',
+            '16022024-144.jpg',
+            '16022024-146.jpg',
+            '16022024-148.jpg',
+            '16022024-152.jpg',
+            '16022024-154.jpg',
+            '16022024-156.jpg',
+            '16022024-158.jpg',
+            '16022024-162.jpg',
+            '16022024-164.jpg',
+            '16022024-166.jpg',
+            '16022024-170.jpg',
+            '16022024-172.jpg',
+            '16022024-174.jpg',
+            '16022024-178.jpg',
+            '16022024-180.jpg',
+            '16022024-182.jpg',
+            '16022024-184.jpg',
+            '16022024-186.jpg',
+            '16022024-194.jpg',
+            '16022024-198.jpg',
+            '16022024-202.jpg'
+        ];
+
+        // Function to switch language
+        function switchLanguage(lang) {
+            currentLanguage = lang;
+            
+            // Update language buttons
+            document.querySelectorAll('#lang-toggle .nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update all translated content
+            const langData = translations[lang];
+            document.querySelectorAll('[data-key]').forEach(element => {
+                const key = element.getAttribute('data-key');
+                if (langData[key]) {
+                    element.innerHTML = langData[key];
+                }
+            });
+            
+            // Update page title and header based on language
+            const headerTitle = document.querySelector('.header h1');
+            const headerSubtitle = document.querySelector('.header p');
+            
+            switch(lang) {
+                case 'en':
+                    headerTitle.textContent = 'Peugeot 207 CC';
+                    headerSubtitle.textContent = '2007 • 1.6 HDi • Convertible';
+                    break;
+                case 'sr':
+                    headerTitle.textContent = 'Peugeot 207 CC';
+                    headerSubtitle.textContent = '2007 • 1.6 HDi • Kabriolet';
+                    break;
+                case 'ru':
+                    headerTitle.textContent = 'Peugeot 207 CC';
+                    headerSubtitle.textContent = '2007 • 1.6 HDi • Кабриолет';
+                    break;
+            }
+        }
+
+        // Function to create gallery
+        function createGallery() {
+            const galleryContainer = document.getElementById('gallery');
+            const loadingElement = document.getElementById('loading');
+            
+            // Clear loading message
+            loadingElement.style.display = 'none';
+            
+            photoFiles.forEach((filename, index) => {
+                const photoPath = `static/photos/${filename}`;
+                
+                // Create gallery item
+                const galleryItem = document.createElement('a');
+                galleryItem.href = photoPath;
+                galleryItem.setAttribute('data-lightbox', 'car-gallery');
+                galleryItem.setAttribute('data-title', `Car Photo ${index + 1}`);
+                galleryItem.className = 'gallery-item';
+                
+                // Create image element
+                const img = document.createElement('img');
+                img.src = photoPath;
+                img.alt = `Car photo ${index + 1}`;
+                img.loading = 'lazy'; // Lazy loading for better performance
+                
+                // Handle image load errors
+                img.onerror = function() {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjUwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjUwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjE4IiBmaWxsPSIjOTk5IiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+SW1hZ2UgTm90IEZvdW5kPC90ZXh0Pjwvc3ZnPg==';
+                    this.alt = 'Image not found';
+                };
+                
+                galleryItem.appendChild(img);
+                galleryContainer.appendChild(galleryItem);
+            });
+        }
+
+        // Initialize gallery when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set initial language to English and update button states
+            const englishBtn = document.querySelector('#lang-toggle .nav-btn[onclick="switchLanguage(\'en\')"]');
+            if (englishBtn) {
+                // Clear all active states first
+                document.querySelectorAll('#lang-toggle .nav-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                // Set English as active
+                englishBtn.classList.add('active');
+                // Apply English translations
+                const langData = translations['en'];
+                document.querySelectorAll('[data-key]').forEach(element => {
+                    const key = element.getAttribute('data-key');
+                    if (langData[key]) {
+                        element.innerHTML = langData[key];
+                    }
+                });
+                // Update header
+                const headerTitle = document.querySelector('.header h1');
+                const headerSubtitle = document.querySelector('.header p');
+                headerTitle.textContent = 'Peugeot 207 CC';
+                headerSubtitle.textContent = '2007 • 1.6 HDi • Convertible';
+            }
+            
+            // Configure Lightbox2 options
+            lightbox.option({
+                'resizeDuration': 200,
+                'wrapAround': true,
+                'albumLabel': 'Image %1 of %2'
+            });
+        });
+
+        // Toggle between views
+        function showView(viewName) {
+            // Hide all views
+            document.querySelectorAll('.content-view').forEach(view => {
+                view.classList.remove('active');
+            });
+            
+            // Remove active class from main navigation buttons only
+            document.querySelectorAll('.nav-toggle:not(#lang-toggle) .nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected view
+            document.getElementById(viewName + '-view').classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            // Show/hide language toggle based on view
+            const langToggle = document.getElementById('lang-toggle');
+            if (viewName === 'description') {
+                langToggle.style.display = 'flex';
+            } else {
+                langToggle.style.display = 'none';
+            }
+            
+            // Initialize gallery if switching to gallery view
+            if (viewName === 'gallery' && !document.getElementById('gallery').children.length) {
+                createGallery();
+            }
+        }
+    </script>
+    </body>
+</html>
